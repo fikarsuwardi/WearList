@@ -1,0 +1,101 @@
+=====================================
+  WearList — User Narrative & Plan
+=====================================
+
+---[ NARASI PENGGUNA ]---
+
+Ayu, 24 tahun, seorang karyawan kantoran di Jakarta, punya kebiasaan yang cukup umum: suka belanja baju.
+Setiap kali ada sale, ada event, atau sekadar iseng scroll Shopee jam 2 malam, Ayu hampir selalu beli sesuatu.
+
+Masalahnya? Lemarinya sudah penuh. Bukan penuh-penuh banget, tapi setiap pagi dia selalu bilang hal yang sama:
+"Eh, aku punya baju apa ya sebenernya?"
+
+Ayu sering lupa baju apa yang dia punya. Kadang dia beli baju warna biru lagi, padahal sudah punya tiga.
+Kadang dia nemu baju di tumpukan paling bawah yang bahkan lupa pernah beli. Lebih parahnya lagi, waktu mau
+beli baju baru online, dia bingung ukuran apa yang pas buat dia—karena tiap brand beda-beda, dan dia
+nggak hafal ukuran badannya sendiri secara lengkap.
+
+Ada juga baju-baju yang sebenernya udah dia nggak suka. Entah karena warnanya nggak cocok di badan,
+modelnya udah ketinggalan zaman, atau emang nggak nyaman dipake. Tapi karena nggak pernah dicatat,
+baju itu tetap numpuk di lemari dan bikin Ayu makin bingung tiap pagi.
+
+Suatu malam, sambil meratapi lemarinya yang berantakan, Ayu kepikiran:
+"Kayaknya aku butuh aplikasi buat nyimpen daftar bajuku deh. Yang simpel, bisa diakses dari HP,
+dan bisa bantu aku tau apa yang aku punya, apa yang udah nggak aku suka, dan ukuran badan aku berapa."
+
+Dari situlah lahir WearList.
+
+---[ SOLUSI: WearList ]---
+
+WearList adalah web app sederhana yang membantu pengguna mengelola koleksi pakaian mereka.
+Tidak perlu login, tidak perlu internet — semua data tersimpan di browser masing-masing pengguna.
+
+---[ FITUR ]---
+
+1. LIST PAKAIAN
+   - Tambah pakaian baru dengan info: nama, kategori, ukuran, warna, catatan
+   - Tambah foto tiap pakaian — bisa langsung dari kamera atau pilih dari galeri
+   - Foto dikompress otomatis sebelum disimpan agar tidak berat
+   - Lihat semua pakaian dalam bentuk grid card dengan thumbnail foto
+   - Edit atau hapus pakaian
+
+2. KATEGORI
+   - Atas (kaos, kemeja, blouse, hoodie, dll)
+   - Bawahan (celana, rok, dll)
+   - Outer (jaket, cardigan, dll)
+   - Dress / Jumpsuit
+   - Aksesoris
+   - Filter tampilan berdasarkan kategori
+
+3. TIDAK DISUKAI
+   - Tandai pakaian yang sudah tidak disukai / jarang dipakai
+   - Tampilan khusus untuk pakaian "discard list" — bisa jadi referensi untuk dijual atau didonasi
+
+4. UKURAN BAJU
+   - Simpan ukuran tiap pakaian: XS / S / M / L / XL / XXL atau ukuran angka
+   - Ditampilkan sebagai badge di tiap card pakaian
+
+5. UKURAN BADAN (Profil Saya)
+   - Halaman profil untuk menyimpan ukuran badan lengkap:
+     * Tinggi badan (cm)
+     * Berat badan (kg)
+     * Lingkar dada (cm)
+     * Lingkar pinggang (cm)
+     * Lingkar pinggul (cm)
+     * Panjang lengan (cm)
+   - Berguna sebagai referensi saat belanja online
+
+---[ TECH STACK ]---
+
+- HTML5
+- CSS3 inline (mobile-first, tampilan ala native app — max-width 430px)
+- Vanilla JavaScript (ES6+)
+- LocalStorage (penyimpanan data di browser, tanpa backend)
+- Canvas API (kompresi foto sebelum disimpan ke LocalStorage)
+
+---[ STRUKTUR FILE ]---
+
+WearList/
+├── index.html         → Semua halaman + style (single file, pola mobile app)
+├── app.js             → Logic utama (CRUD, filter, foto, LocalStorage)
+└── story.txt          → File ini
+
+---[ ALUR PENGGUNA ]---
+
+1. Buka WearList → langsung lihat semua koleksi baju (atau empty state kalau baru pertama kali)
+2. Tap tombol "+" → form tambah pakaian baru → simpan ke LocalStorage
+3. Tap pakaian → lihat detail → bisa edit atau tandai "tidak suka"
+4. Filter by kategori → lihat hanya kaos, atau hanya outer, dll
+5. Buka halaman Profil → isi/update ukuran badan
+
+---[ RENCANA PENGEMBANGAN (Flutter) ]---
+
+Setelah versi web selesai dan fitur sudah stabil, aplikasi ini akan di-port ke Flutter
+untuk menjadi mobile app yang bisa digunakan di Android dan iOS. Struktur data yang
+sama akan digunakan, hanya digantikan dengan SharedPreferences atau SQLite sebagai
+pengganti LocalStorage.
+
+=====================================
+  Dibuat dengan semangat biar lemari
+  nggak berantakan lagi. — WearList
+=====================================

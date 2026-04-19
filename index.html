@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>WearList</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box; margin: 0; padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    :root {
+      --primary:    #4A3728;
+      --primary-lt: #7A6055;
+      --accent:     #C8956C;
+      --accent-lt:  #F0D9C8;
+      --bg:         #F7F5F2;
+      --surface:    #FFFFFF;
+      --text:       #1A1A1A;
+      --text-2:     #666;
+      --text-3:     #AAA;
+      --border:     #E8E2DC;
+      --danger:     #D64045;
+      --danger-lt:  #FDEAEA;
+      --green:      #2E7D32;
+      --green-lt:   #E8F5E9;
+      --radius:     16px;
+      --radius-sm:  10px;
+      --shadow:     0 2px 12px rgba(0,0,0,0.08);
+      --nav-h:      64px;
+    }
+    html, body {
+      height: 100%;
+      background: #DED4C9;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 15px;
+      color: var(--text);
+    }
+
+    /* ── App container ── */
+    #app {
+      max-width: 430px;
+      height: 100%;
+      margin: 0 auto;
+      background: var(--bg);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 0 40px rgba(0,0,0,0.18);
+    }
+
+    /* ── Main app wrapper ── */
+    #mainApp {
+      flex: 1;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── Login Screen ── */
+    #screenLogin {
+      position: absolute;
+      inset: 0;
+      background: var(--primary);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px;
+    }
+    .login-inner {
+      text-align: center;
+      color: #fff;
+      width: 100%;
+    }
+    .login-icon  { font-size: 72px; margin-bottom: 16px; line-height: 1; }
+    .login-title { font-size: 38px; font-weight: 800; letter-spacing: -1px; }
+    .login-sub   { font-size: 15px; opacity: 0.6; margin-top: 8px; }
+    .login-divider {
+      margin: 36px auto 0;
+      opacity: 0.2;
+      border: none;
+      border-top: 1px solid #fff;
+    }
+    .btn-google {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      background: #fff;
+      color: #1A1A1A;
+      border: none;
+      border-radius: 14px;
+      padding: 15px 24px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 24px;
+      font-family: inherit;
+      transition: opacity 0.15s;
+    }
+    .btn-google:active { opacity: 0.85; }
+    .btn-google svg { flex-shrink: 0; }
+
+    /* ── Loading Overlay ── */
+    #loadingOverlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(247,245,242,0.88);
+      z-index: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Splash ── */
+    #splash {
+      position: absolute;
+      inset: 0;
+      background: var(--primary);
+      z-index: 999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.5s ease;
+    }
+    .splash-inner {
+      text-align: center;
+      color: #fff;
+      animation: splashIn 0.7s ease;
+    }
+    .splash-icon { font-size: 72px; margin-bottom: 16px; line-height: 1; }
+    .splash-title { font-size: 38px; font-weight: 800; letter-spacing: -1px; }
+    .splash-sub { font-size: 15px; opacity: 0.6; margin-top: 8px; font-weight: 400; }
+    @keyframes splashIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Screens ── */
+    .screen { display: none; flex: 1; flex-direction: column; overflow: hidden; }
+    .screen.active { display: flex; }
+
+    /* ── Header ── */
+    .header {
+      background: var(--surface);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .header-title { font-size: 22px; font-weight: 800; color: var(--primary); letter-spacing: -0.5px; }
+    .header-count { font-size: 13px; color: var(--text-3); }
+    .header-action {
+      font-size: 13px; font-weight: 600;
+      color: var(--accent); background: var(--accent-lt);
+      border: none; border-radius: 20px;
+      padding: 6px 12px; cursor: pointer;
+      font-family: inherit;
+    }
+
+    /* ── Scroll ── */
+    .scroll {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: calc(var(--nav-h) + 72px);
+    }
+
+    /* ── Category section (home & arsip) ── */
+    .cat-section { margin-bottom: 4px; }
+    .cat-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 16px 10px;
+    }
+    .cat-title { font-size: 15px; font-weight: 700; color: var(--primary); }
+    .cat-count {
+      font-size: 12px; font-weight: 600;
+      color: var(--primary-lt);
+      background: var(--accent-lt);
+      padding: 2px 9px; border-radius: 12px;
+    }
+    .cat-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 0 16px 10px;
+    }
+
+    /* ── Clothes grid ── */
+    .clothes-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      padding: 0 14px 14px;
+    }
+
+    /* ── Card ── */
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      cursor: pointer;
+      transition: transform 0.15s;
+      border: 1.5px solid transparent;
+      position: relative;
+    }
+    .card:active { transform: scale(0.97); }
+    .card.arsip-item { border-color: var(--border); opacity: 0.85; }
+    .card-arsip-badge {
+      position: absolute; top: 6px; left: 6px;
+      background: rgba(0,0,0,0.55); color: #fff;
+      font-size: 10px; padding: 2px 6px;
+      border-radius: 20px; pointer-events: none;
+      backdrop-filter: blur(4px); z-index: 1;
+    }
+
+    .card-photo {
+      width: 100%; aspect-ratio: 1;
+      object-fit: cover; display: block;
+    }
+    .card-placeholder {
+      width: 100%; aspect-ratio: 1;
+      background: var(--accent-lt);
+      display: flex; align-items: center;
+      justify-content: center;
+      font-size: 44px;
+    }
+    .card-footer {
+      padding: 8px 10px 10px;
+    }
+    .card-kat {
+      font-size: 11px; font-weight: 600;
+      color: var(--primary);
+      display: block;
+      margin-bottom: 3px;
+    }
+    .card-note {
+      font-size: 11px; color: var(--text-3);
+      overflow: hidden; text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* ── Empty state ── */
+    .empty {
+      text-align: center;
+      padding: 60px 20px;
+    }
+    .empty-icon { font-size: 52px; margin-bottom: 14px; }
+    .empty-text { font-size: 15px; font-weight: 600; color: var(--text-2); }
+    .empty-sub  { font-size: 13px; color: var(--text-3); margin-top: 4px; }
+
+    /* ── FAB ── */
+    .fab {
+      position: absolute;
+      bottom: calc(var(--nav-h) + 14px); right: 16px;
+      width: 54px; height: 54px;
+      border-radius: 50%;
+      background: var(--primary); color: #fff;
+      font-size: 30px; border: none; cursor: pointer;
+      box-shadow: 0 4px 18px rgba(74,55,40,0.38);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 50; transition: transform 0.15s;
+    }
+    .fab:active { transform: scale(0.92); }
+
+    /* ── Bottom nav ── */
+    .bottom-nav {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: var(--nav-h);
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      display: flex; z-index: 50;
+    }
+    .nav-btn {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 3px; font-size: 11px;
+      color: var(--text-3); border: none;
+      background: none; cursor: pointer;
+      transition: color 0.15s; font-family: inherit;
+    }
+    .nav-btn .nav-icon { font-size: 22px; line-height: 1; }
+    .nav-btn.active { color: var(--primary); font-weight: 600; }
+
+    /* ── Modal overlay ── */
+    .modal-overlay {
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 100;
+      display: flex; align-items: flex-end;
+    }
+    .modal-overlay.hidden { display: none; }
+    .modal {
+      background: var(--surface);
+      border-radius: var(--radius) var(--radius) 0 0;
+      width: 100%; max-height: 92%;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 20px 20px 36px;
+      animation: slideUp 0.25s ease;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(40px); opacity: 0; }
+      to   { transform: translateY(0);    opacity: 1; }
+    }
+    .modal-head {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .modal-head h3 { font-size: 18px; font-weight: 700; color: var(--primary); }
+    .btn-close {
+      font-size: 26px; color: var(--text-3);
+      line-height: 1; padding: 4px;
+      border: none; background: none; cursor: pointer;
+    }
+
+    /* ── Form ── */
+    .form-group { margin-bottom: 16px; }
+    .form-group label {
+      display: block; font-size: 13px;
+      font-weight: 600; color: var(--primary-lt);
+      margin-bottom: 6px;
+    }
+    .req { color: var(--accent); }
+    .form-group input[type="text"],
+    .form-group select,
+    .form-group textarea {
+      width: 100%; padding: 11px 13px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--bg); color: var(--text);
+      font-size: 15px; font-family: inherit;
+      outline: none; transition: border-color 0.15s;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus { border-color: var(--accent); }
+    .form-group textarea { resize: none; }
+
+    .new-cat-row {
+      display: flex; gap: 8px; margin-top: 8px;
+    }
+    .new-cat-row input {
+      flex: 1; padding: 9px 12px;
+      border: 1.5px solid var(--accent);
+      border-radius: var(--radius-sm);
+      background: var(--bg); font-size: 14px;
+      font-family: inherit; outline: none;
+      color: var(--text);
+    }
+    .btn-add-cat {
+      padding: 9px 14px;
+      background: var(--primary); color: #fff;
+      border: none; border-radius: var(--radius-sm);
+      font-size: 13px; font-weight: 600;
+      cursor: pointer; font-family: inherit;
+      white-space: nowrap;
+    }
+
+    /* Photo picker */
+    .photo-picker {
+      width: 100%; aspect-ratio: 16/9;
+      border: 2px dashed var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--bg);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 6px; cursor: pointer;
+      overflow: hidden; position: relative;
+      transition: border-color 0.15s;
+    }
+    .photo-picker.has-photo { border-style: solid; border-color: var(--accent); }
+    .photo-picker img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      position: absolute; inset: 0;
+    }
+    .photo-placeholder {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 6px;
+      pointer-events: none;
+    }
+    .photo-placeholder span:first-child { font-size: 32px; }
+    .photo-placeholder span:last-child { font-size: 13px; color: var(--text-3); text-align: center; }
+    .photo-picker input[type="file"] {
+      position: absolute; inset: 0;
+      opacity: 0; width: 100%; height: 100%; cursor: pointer;
+    }
+    .photo-remove {
+      position: absolute; top: 8px; right: 8px;
+      background: rgba(0,0,0,0.5); color: #fff;
+      border: none; border-radius: 50%;
+      width: 28px; height: 28px;
+      font-size: 14px; cursor: pointer;
+      display: none; align-items: center;
+      justify-content: center; z-index: 2;
+    }
+    .photo-remove.visible { display: flex; }
+    .photo-required-hint {
+      font-size: 12px; color: var(--danger);
+      margin-top: 5px; display: none;
+    }
+    .photo-required-hint.show { display: block; }
+
+    /* Checkbox */
+    .check-label {
+      display: flex; align-items: center;
+      gap: 10px; font-size: 14px;
+      font-weight: 500; color: var(--text); cursor: pointer;
+    }
+    .check-label input[type="checkbox"] {
+      width: 18px; height: 18px;
+      accent-color: var(--primary);
+    }
+
+    /* Btn save */
+    .btn-save {
+      width: 100%; padding: 14px;
+      border-radius: 12px; background: var(--primary);
+      color: #fff; font-size: 15px; font-weight: 600;
+      border: none; cursor: pointer; margin-top: 8px;
+      font-family: inherit; transition: background 0.15s;
+    }
+    .btn-save:active { background: var(--primary-lt); }
+
+    /* ── Detail modal ── */
+    .detail-photo {
+      width: 100%; aspect-ratio: 4/3;
+      object-fit: cover; border-radius: var(--radius-sm);
+      margin-bottom: 16px; display: block;
+    }
+    .detail-placeholder {
+      width: 100%; aspect-ratio: 4/3;
+      background: var(--accent-lt);
+      border-radius: var(--radius-sm);
+      display: flex; align-items: center;
+      justify-content: center; font-size: 56px;
+      margin-bottom: 16px;
+    }
+    .detail-row {
+      display: flex; justify-content: space-between;
+      align-items: flex-start;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+    }
+    .detail-row:last-of-type { border-bottom: none; }
+    .detail-label { color: var(--text-3); font-weight: 500; }
+    .detail-value { font-weight: 600; color: var(--text); text-align: right; max-width: 60%; }
+    .detail-catatan {
+      margin-top: 12px; padding: 12px;
+      background: var(--bg); border-radius: var(--radius-sm);
+      font-size: 13px; color: var(--text-2); line-height: 1.5;
+    }
+    .detail-actions {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 10px; margin-top: 20px;
+    }
+    .detail-actions.three { grid-template-columns: 1fr 1fr 1fr; }
+    .btn-action {
+      padding: 13px; border-radius: 12px;
+      font-size: 13px; font-weight: 600;
+      border: none; cursor: pointer; font-family: inherit;
+    }
+    .btn-edit    { background: var(--accent-lt); color: var(--primary); }
+    .btn-arsip   { background: #EEF2FF; color: #3730A3; }
+    .btn-restore { background: var(--green-lt); color: var(--green); }
+    .btn-delete  { background: var(--danger-lt); color: var(--danger); }
+
+    /* ── Arsipkan modal ── */
+    .modal-desc {
+      font-size: 13px; color: var(--text-2);
+      margin-bottom: 16px; margin-top: -10px;
+    }
+    .arsip-cat-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+    .arsip-cat-btn {
+      width: 100%; padding: 14px 16px;
+      background: var(--bg); border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 14px; font-weight: 500;
+      color: var(--text); text-align: left;
+      cursor: pointer; font-family: inherit;
+      transition: all 0.15s;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .arsip-cat-btn:active { background: var(--accent-lt); border-color: var(--accent); }
+    .arsip-cat-icon { font-size: 18px; }
+    .add-cat-link {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 13px; font-weight: 600;
+      color: var(--accent); cursor: pointer;
+      padding: 8px 0; background: none; border: none;
+      font-family: inherit;
+    }
+
+    /* ── Profile page ── */
+    .profile-wrap {
+      padding: 16px;
+    }
+    .body-diagram {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 20px 16px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow);
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+    .body-diagram svg { flex-shrink: 0; }
+    .diagram-labels {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 4px 0;
+    }
+    .diagram-label {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .diagram-label-name {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--primary-lt);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .diagram-label-val {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--primary);
+      line-height: 1;
+    }
+    .diagram-label-val span {
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--text-3);
+    }
+
+    .profile-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 4px 16px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow);
+    }
+    .prof-row {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding: 13px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .prof-row:last-child { border-bottom: none; }
+    .prof-label { font-size: 14px; font-weight: 500; }
+    .prof-input-wrap { display: flex; align-items: center; gap: 5px; }
+    .prof-input-wrap input {
+      width: 72px; padding: 8px 10px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px; background: var(--bg);
+      text-align: right; font-size: 15px;
+      font-family: inherit; outline: none; color: var(--text);
+    }
+    .prof-input-wrap input:focus { border-color: var(--accent); }
+    .prof-unit { font-size: 13px; color: var(--text-3); width: 22px; }
+
+    /* Logout button */
+    .btn-logout {
+      width: 100%; padding: 14px;
+      border-radius: 12px;
+      background: var(--danger-lt);
+      color: var(--danger);
+      font-size: 15px; font-weight: 600;
+      border: none; cursor: pointer;
+      font-family: inherit;
+      margin-top: 4px; margin-bottom: 8px;
+    }
+
+    /* User info strip */
+    .user-info {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow);
+    }
+    .user-avatar {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      background: var(--accent-lt);
+      display: flex; align-items: center;
+      justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+      overflow: hidden;
+    }
+    .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .user-name { font-size: 14px; font-weight: 600; color: var(--primary); }
+    .user-email { font-size: 12px; color: var(--text-3); }
+
+    /* ── Toast ── */
+    #toast {
+      position: absolute;
+      bottom: calc(var(--nav-h) + 76px);
+      left: 50%; transform: translateX(-50%);
+      background: #1A1A1A; color: #fff;
+      padding: 10px 20px; border-radius: 20px;
+      font-size: 13px; font-weight: 500;
+      white-space: nowrap; z-index: 200;
+      pointer-events: none; transition: opacity 0.2s;
+    }
+
+    .hidden { display: none !important; }
+
+    /* ── Crop modal ── */
+    .crop-modal {
+      background: #111;
+      border-radius: var(--radius) var(--radius) 0 0;
+      width: 100%;
+      padding: 20px 0 36px;
+      animation: slideUp 0.25s ease;
+    }
+    .crop-modal-head {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding: 0 20px 16px;
+    }
+    .crop-modal-head h3 { font-size: 18px; font-weight: 700; color: #fff; }
+    .crop-modal-head .btn-close { color: rgba(255,255,255,0.5); }
+    .crop-hint {
+      text-align: center;
+      font-size: 12px; color: rgba(255,255,255,0.4);
+      margin-bottom: 10px;
+    }
+    .crop-viewport {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1;
+      overflow: hidden;
+      background: #000;
+      cursor: grab;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .crop-viewport:active { cursor: grabbing; }
+    .crop-viewport img {
+      position: absolute;
+      display: block;
+      touch-action: none;
+      pointer-events: none;
+    }
+    .crop-grid {
+      position: absolute; inset: 0;
+      pointer-events: none; z-index: 2;
+      background:
+        linear-gradient(rgba(255,255,255,0.15) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.15) 1px, transparent 1px);
+      background-size: 33.333% 33.333%;
+    }
+    .crop-corner {
+      position: absolute; z-index: 3;
+      width: 20px; height: 20px;
+      pointer-events: none;
+    }
+    .crop-corner.tl { top: 0;  left: 0;  border-top: 3px solid #fff; border-left: 3px solid #fff; }
+    .crop-corner.tr { top: 0;  right: 0; border-top: 3px solid #fff; border-right: 3px solid #fff; }
+    .crop-corner.bl { bottom: 0; left: 0;  border-bottom: 3px solid #fff; border-left: 3px solid #fff; }
+    .crop-corner.br { bottom: 0; right: 0; border-bottom: 3px solid #fff; border-right: 3px solid #fff; }
+    .crop-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      padding: 14px 20px 0;
+    }
+    .btn-crop-cancel {
+      padding: 13px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.7);
+      font-size: 14px; font-weight: 600;
+      border: none; cursor: pointer; font-family: inherit;
+    }
+    .btn-crop-confirm {
+      padding: 13px;
+      border-radius: 12px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 14px; font-weight: 600;
+      border: none; cursor: pointer; font-family: inherit;
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ══ LOGIN SCREEN ══ -->
+  <div id="screenLogin" class="hidden">
+    <div class="login-inner">
+      <div class="login-icon">👗</div>
+      <div class="login-title">WearList</div>
+      <div class="login-sub">Lemarimu, lebih rapi.</div>
+      <hr class="login-divider"/>
+      <button class="btn-google" id="btnLoginGoogle">
+        <svg width="20" height="20" viewBox="0 0 48 48">
+          <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+          <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+          <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+          <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+        </svg>
+        Masuk dengan Google
+      </button>
+    </div>
+  </div>
+
+  <!-- ══ MAIN APP ══ -->
+  <div id="mainApp" class="hidden">
+
+    <!-- SPLASH -->
+    <div id="splash">
+      <div class="splash-inner">
+        <div class="splash-icon">👗</div>
+        <div class="splash-title">WearList</div>
+        <div class="splash-sub">Lemarimu, lebih rapi.</div>
+      </div>
+    </div>
+
+    <!-- KOLEKSI -->
+    <div class="screen active" id="screenHome">
+      <div class="header">
+        <span class="header-title">Koleksi</span>
+        <span class="header-count" id="itemCount">0 pakaian</span>
+      </div>
+      <div class="scroll" id="homeScroll"></div>
+    </div>
+
+    <!-- ARSIP -->
+    <div class="screen" id="screenArsip">
+      <div class="header">
+        <span class="header-title">Arsip</span>
+        <button class="header-action" id="addArsipCatBtn">+ Kategori</button>
+      </div>
+      <div class="scroll" id="arsipScroll"></div>
+    </div>
+
+    <!-- PROFIL -->
+    <div class="screen" id="screenProfile">
+      <div class="header">
+        <span class="header-title">Ukuran Badan</span>
+      </div>
+      <div class="scroll">
+        <div class="profile-wrap">
+
+          <!-- User info -->
+          <div class="user-info" id="userInfo">
+            <div class="user-avatar" id="userAvatar">👤</div>
+            <div>
+              <div class="user-name" id="userName">—</div>
+              <div class="user-email" id="userEmail">—</div>
+            </div>
+          </div>
+
+          <!-- Body diagram + key stats -->
+          <div class="body-diagram">
+            <svg width="110" height="220" viewBox="0 0 110 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <ellipse cx="55" cy="22" rx="16" ry="18" fill="#F0D9C8" stroke="#C8956C" stroke-width="1.5"/>
+              <path d="M48 39 Q55 44 62 39 L62 48 Q55 52 48 48 Z" fill="#F0D9C8" stroke="#C8956C" stroke-width="1.5"/>
+              <path d="M32 56 C22 63 18 84 22 106 C24 116 30 118 34 116 C30 96 32 74 40 62 Z" fill="#F0D9C8" stroke="#C8956C" stroke-width="1.5"/>
+              <path d="M78 56 C88 63 92 84 88 106 C86 116 80 118 76 116 C80 96 78 74 70 62 Z" fill="#F0D9C8" stroke="#C8956C" stroke-width="1.5"/>
+              <path d="M32 52 Q28 60 30 78 Q32 92 32 108 Q32 128 28 144 Q34 154 55 156 Q76 154 82 144 Q78 128 78 108 Q78 92 80 78 Q82 60 78 52 Q66 46 55 48 Q44 46 32 52Z" fill="#F0D9C8" stroke="#C8956C" stroke-width="1.5"/>
+              <path d="M28 144 Q24 162 30 180 Q38 196 55 198 Q72 196 80 180 Q86 162 82 144 Q76 154 55 156 Q34 154 28 144Z" fill="#F0D9C8" stroke="#C8956C" stroke-width="1.5"/>
+              <line x1="4"  y1="82"  x2="106" y2="82"  stroke="#C8956C" stroke-width="1" stroke-dasharray="3,3" opacity="0.7"/>
+              <line x1="4"  y1="118" x2="106" y2="118" stroke="#C8956C" stroke-width="1" stroke-dasharray="3,3" opacity="0.7"/>
+              <line x1="4"  y1="156" x2="106" y2="156" stroke="#C8956C" stroke-width="1" stroke-dasharray="3,3" opacity="0.7"/>
+              <circle cx="4"  cy="82"  r="2.5" fill="#C8956C" opacity="0.8"/>
+              <circle cx="4"  cy="118" r="2.5" fill="#C8956C" opacity="0.8"/>
+              <circle cx="4"  cy="156" r="2.5" fill="#C8956C" opacity="0.8"/>
+              <line x1="106" y1="4" x2="106" y2="198" stroke="#C8956C" stroke-width="1" opacity="0.4"/>
+              <polygon points="106,2 103,9 109,9" fill="#C8956C" opacity="0.5"/>
+              <polygon points="106,200 103,193 109,193" fill="#C8956C" opacity="0.5"/>
+            </svg>
+
+            <div class="diagram-labels">
+              <div class="diagram-label" style="margin-top:48px">
+                <span class="diagram-label-name">Dada</span>
+                <div class="diagram-label-val" id="diagDada">— <span>cm</span></div>
+              </div>
+              <div class="diagram-label" style="margin-top:18px">
+                <span class="diagram-label-name">Pinggang</span>
+                <div class="diagram-label-val" id="diagPinggang">— <span>cm</span></div>
+              </div>
+              <div class="diagram-label" style="margin-top:20px">
+                <span class="diagram-label-name">Pinggul</span>
+                <div class="diagram-label-val" id="diagPinggul">— <span>cm</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Form input -->
+          <form id="profileForm">
+            <div class="profile-card">
+              <div class="prof-row">
+                <span class="prof-label">Tinggi Badan</span>
+                <div class="prof-input-wrap">
+                  <input type="number" id="pTinggi" placeholder="0" min="0"/>
+                  <span class="prof-unit">cm</span>
+                </div>
+              </div>
+              <div class="prof-row">
+                <span class="prof-label">Berat Badan</span>
+                <div class="prof-input-wrap">
+                  <input type="number" id="pBerat" placeholder="0" min="0"/>
+                  <span class="prof-unit">kg</span>
+                </div>
+              </div>
+              <div class="prof-row">
+                <span class="prof-label">Lingkar Dada</span>
+                <div class="prof-input-wrap">
+                  <input type="number" id="pDada" placeholder="0" min="0"/>
+                  <span class="prof-unit">cm</span>
+                </div>
+              </div>
+              <div class="prof-row">
+                <span class="prof-label">Lingkar Pinggang</span>
+                <div class="prof-input-wrap">
+                  <input type="number" id="pPinggang" placeholder="0" min="0"/>
+                  <span class="prof-unit">cm</span>
+                </div>
+              </div>
+              <div class="prof-row">
+                <span class="prof-label">Lingkar Pinggul</span>
+                <div class="prof-input-wrap">
+                  <input type="number" id="pPinggul" placeholder="0" min="0"/>
+                  <span class="prof-unit">cm</span>
+                </div>
+              </div>
+              <div class="prof-row">
+                <span class="prof-label">Panjang Lengan</span>
+                <div class="prof-input-wrap">
+                  <input type="number" id="pLengan" placeholder="0" min="0"/>
+                  <span class="prof-unit">cm</span>
+                </div>
+              </div>
+            </div>
+            <button type="submit" class="btn-save">Simpan</button>
+          </form>
+
+          <button type="button" class="btn-logout" id="btnLogout">Keluar</button>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- FAB -->
+    <button class="fab" id="fabBtn" aria-label="Tambah pakaian">+</button>
+
+    <!-- BOTTOM NAV -->
+    <nav class="bottom-nav">
+      <button class="nav-btn active" data-screen="screenHome">
+        <span class="nav-icon">👚</span><span>Koleksi</span>
+      </button>
+      <button class="nav-btn" data-screen="screenArsip">
+        <span class="nav-icon">🗂️</span><span>Arsip</span>
+      </button>
+      <button class="nav-btn" data-screen="screenProfile">
+        <span class="nav-icon">📏</span><span>Profil</span>
+      </button>
+    </nav>
+
+    <!-- MODAL: FORM TAMBAH/EDIT -->
+    <div class="modal-overlay hidden" id="modalForm">
+      <div class="modal">
+        <div class="modal-head">
+          <h3 id="modalTitle">Tambah Pakaian</h3>
+          <button class="btn-close" id="formClose">&times;</button>
+        </div>
+        <form id="clothesForm">
+          <input type="hidden" id="editId"/>
+
+          <div class="form-group">
+            <label>Foto Pakaian <span class="req">*</span></label>
+            <div class="photo-picker" id="photoPicker">
+              <input type="file" accept="image/*" id="fFoto"/>
+              <div class="photo-placeholder" id="photoPlaceholder">
+                <span>📷</span>
+                <span>Foto dari kamera atau galeri</span>
+              </div>
+              <img id="photoPreview" src="" alt="" style="display:none;"/>
+              <button type="button" class="photo-remove" id="photoRemove">&times;</button>
+            </div>
+            <div class="photo-required-hint" id="photoHint">Foto wajib ditambahkan</div>
+          </div>
+
+          <div class="form-group">
+            <label>Kategori <span class="req">*</span></label>
+            <select id="fKategori" required>
+              <option value="">-- Pilih --</option>
+              <option value="__new__">＋ Tambah kategori baru...</option>
+            </select>
+            <div class="new-cat-row hidden" id="newKatRow">
+              <input type="text" id="fNewKat" placeholder="Nama kategori baru"/>
+              <button type="button" class="btn-add-cat" id="saveNewKat">Tambah</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Catatan</label>
+            <textarea id="fCatatan" rows="2" placeholder="cth. Agak kebesaran, cocok buat santai"></textarea>
+          </div>
+
+          <button type="submit" class="btn-save">Simpan</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- MODAL: DETAIL -->
+    <div class="modal-overlay hidden" id="modalDetail">
+      <div class="modal">
+        <div class="modal-head">
+          <h3 id="detailTitle">Detail Pakaian</h3>
+          <button class="btn-close" id="detailClose">&times;</button>
+        </div>
+        <div id="detailBody"></div>
+        <div class="detail-actions" id="detailActions"></div>
+      </div>
+    </div>
+
+    <!-- MODAL: ARSIPKAN -->
+    <div class="modal-overlay hidden" id="modalArsipkan">
+      <div class="modal">
+        <div class="modal-head">
+          <h3>Pindah ke Arsip</h3>
+          <button class="btn-close" id="arsipkanClose">&times;</button>
+        </div>
+        <p class="modal-desc">Pilih kategori untuk pakaian ini.</p>
+        <div class="arsip-cat-list" id="arsipCatList"></div>
+        <button type="button" class="add-cat-link" id="addArsipCatInline">
+          <span>＋</span> Tambah kategori arsip baru
+        </button>
+        <div class="new-cat-row hidden" id="newArsipCatRow">
+          <input type="text" id="fNewArsipCat" placeholder="cth. Jual, Kasih teman..."/>
+          <button type="button" class="btn-add-cat" id="saveNewArsipCat">Tambah</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: TAMBAH KATEGORI ARSIP (dari header) -->
+    <div class="modal-overlay hidden" id="modalAddArsipCat">
+      <div class="modal">
+        <div class="modal-head">
+          <h3>Tambah Kategori Arsip</h3>
+          <button class="btn-close" id="addArsipCatClose">&times;</button>
+        </div>
+        <div class="form-group">
+          <label>Nama Kategori</label>
+          <input type="text" id="fAddArsipCat" placeholder="cth. Donasi, Jual, Kasih teman..."/>
+        </div>
+        <button type="button" class="btn-save" id="confirmAddArsipCat">Tambah</button>
+      </div>
+    </div>
+
+    <!-- MODAL: CROP FOTO -->
+    <div class="modal-overlay hidden" id="modalCrop" style="align-items:flex-end;">
+      <div class="crop-modal">
+        <div class="crop-modal-head">
+          <h3>Atur Posisi Foto</h3>
+          <button class="btn-close" id="cropCancel">&times;</button>
+        </div>
+        <p class="crop-hint">Geser foto untuk mengatur area yang terlihat</p>
+        <div class="crop-viewport" id="cropViewport">
+          <img id="cropImgEl" src="" alt=""/>
+          <div class="crop-grid"></div>
+          <div class="crop-corner tl"></div>
+          <div class="crop-corner tr"></div>
+          <div class="crop-corner bl"></div>
+          <div class="crop-corner br"></div>
+        </div>
+        <div class="crop-actions">
+          <button class="btn-crop-cancel" id="cropCancelBtn">Batal</button>
+          <button class="btn-crop-confirm" id="cropConfirmBtn">Gunakan Foto</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- #mainApp -->
+
+  <!-- LOADING OVERLAY -->
+  <div id="loadingOverlay" class="hidden">
+    <div class="spinner"></div>
+  </div>
+
+</div><!-- #app -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="app.js"></script>
+</body>
+</html>
