@@ -682,7 +682,7 @@ function showScreen(id) {
 
 // ── Profile ────────────────────────────────────
 function loadProfileUI() {
-  ['Tinggi','Berat','Dada','Pinggang','Pinggul','Lengan'].forEach(k => {
+  ['Tinggi','Berat','Dada','Pinggang','Pinggul','Lengan','Kaki','Sepatu'].forEach(k => {
     const el  = document.getElementById('p' + k);
     const val = profile[k.toLowerCase()];
     if (el && val) el.value = val;
@@ -710,6 +710,8 @@ async function saveProfileForm(e) {
     pinggang: parseFloat(document.getElementById('pPinggang').value) || null,
     pinggul:  parseFloat(document.getElementById('pPinggul').value)  || null,
     lengan:   parseFloat(document.getElementById('pLengan').value)   || null,
+    kaki:     parseFloat(document.getElementById('pKaki').value)     || null,
+    sepatu:   parseFloat(document.getElementById('pSepatu').value)   || null,
   };
 
   showLoading(true);
@@ -838,6 +840,26 @@ function initEvents() {
     }
   });
 
+  document.getElementById('addCatBtn').addEventListener('click', () => {
+    document.getElementById('fAddCat').value = '';
+    document.getElementById('modalAddCat').classList.remove('hidden');
+  });
+  document.getElementById('addCatClose').addEventListener('click', () => {
+    document.getElementById('modalAddCat').classList.add('hidden');
+  });
+  document.getElementById('modalAddCat').addEventListener('click', e => {
+    if (e.target === e.currentTarget)
+      document.getElementById('modalAddCat').classList.add('hidden');
+  });
+  document.getElementById('confirmAddCat').addEventListener('click', async () => {
+    const name = document.getElementById('fAddCat').value;
+    if (await addCategory(name)) {
+      document.getElementById('modalAddCat').classList.add('hidden');
+      showToast(`Kategori "${name}" ditambahkan`);
+      buildCategoryOptions();
+    }
+  });
+
   document.getElementById('addArsipCatBtn').addEventListener('click', () => {
     document.getElementById('fAddArsipCat').value = '';
     document.getElementById('modalAddArsipCat').classList.remove('hidden');
@@ -911,8 +933,10 @@ async function init() {
   ]);
 
   if (sessionResult.timedOut) {
-    await db.auth.signOut();
-    showLoginScreen();
+    if (!sessionHandled) {
+      showLoading(false);
+      showLoginScreen();
+    }
   } else if (!sessionHandled) {
     await handleSession(sessionResult.data.session);
   }

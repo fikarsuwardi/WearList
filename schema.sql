@@ -41,6 +41,8 @@ CREATE TABLE IF NOT EXISTS profiles (
   pinggang   NUMERIC,
   pinggul    NUMERIC,
   lengan     NUMERIC,
+  kaki       NUMERIC,
+  sepatu     NUMERIC,
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 

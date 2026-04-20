@@ -747,7 +747,10 @@
     <div class="screen active" id="screenHome">
       <div class="header">
         <span class="header-title">Koleksi</span>
-        <span class="header-count" id="itemCount">0 pakaian</span>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <button class="header-action" id="addCatBtn">+ Kategori</button>
+          <span class="header-count" id="itemCount">0 pakaian</span>
+        </div>
       </div>
       <div class="scroll" id="homeScroll"></div>
     </div>
@@ -859,6 +862,20 @@
                   <span class="prof-unit">cm</span>
                 </div>
               </div>
+              <div class="prof-row">
+                <span class="prof-label">Panjang Kaki</span>
+                <div class="prof-input-wrap">
+                  <input type="number" id="pKaki" placeholder="0" min="0"/>
+                  <span class="prof-unit">cm</span>
+                </div>
+              </div>
+              <div class="prof-row">
+                <span class="prof-label">Nomor Sepatu</span>
+                <div class="prof-input-wrap">
+                  <input type="number" id="pSepatu" placeholder="0" min="0"/>
+                  <span class="prof-unit">EU</span>
+                </div>
+              </div>
             </div>
             <button type="submit" class="btn-save">Simpan</button>
           </form>
@@ -959,6 +976,21 @@
           <input type="text" id="fNewArsipCat" placeholder="cth. Jual, Kasih teman..."/>
           <button type="button" class="btn-add-cat" id="saveNewArsipCat">Tambah</button>
         </div>
+      </div>
+    </div>
+
+    <!-- MODAL: TAMBAH KATEGORI KOLEKSI (dari header) -->
+    <div class="modal-overlay hidden" id="modalAddCat">
+      <div class="modal">
+        <div class="modal-head">
+          <h3>Tambah Kategori</h3>
+          <button class="btn-close" id="addCatClose">&times;</button>
+        </div>
+        <div class="form-group">
+          <label>Nama Kategori</label>
+          <input type="text" id="fAddCat" placeholder="cth. Olahraga, Formal, Piyama..."/>
+        </div>
+        <button type="button" class="btn-save" id="confirmAddCat">Tambah</button>
       </div>
     </div>
 
