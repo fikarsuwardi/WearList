@@ -419,7 +419,6 @@ function buildCategoryOptions() {
   const cur = sel.value;
   sel.innerHTML = '<option value="">-- Pilih --</option>';
   categories.forEach(cat => sel.add(new Option(cat, cat)));
-  sel.add(new Option('＋ Tambah kategori baru...', '__new__'));
   if (categories.includes(cur)) sel.value = cur;
 }
 
@@ -576,7 +575,7 @@ async function saveItem(e) {
 
   const kategori = document.getElementById('fKategori').value;
   const catatan  = document.getElementById('fCatatan').value.trim();
-  if (!kategori || kategori === '__new__') return;
+  if (!kategori) return;
 
   isSaving = true;
   showLoading(true);
@@ -790,14 +789,9 @@ function initEvents() {
   document.getElementById('cropCancelBtn').addEventListener('click', closeCropModal);
   document.getElementById('cropCancel').addEventListener('click', closeCropModal);
 
-  document.getElementById('fKategori').addEventListener('change', e => {
-    if (e.target.value === '__new__') {
-      e.target.value = '';
-      document.getElementById('newKatRow').classList.remove('hidden');
-      document.getElementById('fNewKat').focus();
-    } else {
-      document.getElementById('newKatRow').classList.add('hidden');
-    }
+  document.getElementById('btnTambahKat').addEventListener('click', () => {
+    document.getElementById('newKatRow').classList.toggle('hidden');
+    document.getElementById('fNewKat').focus();
   });
 
   document.getElementById('saveNewKat').addEventListener('click', async () => {

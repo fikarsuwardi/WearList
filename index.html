@@ -366,6 +366,12 @@
       font-family: inherit; outline: none;
       color: var(--text);
     }
+    .btn-add-cat-inline {
+      margin-top: 6px;
+      background: none; border: none;
+      color: var(--accent); font-size: 13px;
+      padding: 0; cursor: pointer;
+    }
     .btn-add-cat {
       padding: 9px 14px;
       background: var(--primary); color: #fff;
@@ -930,8 +936,8 @@
             <label>Kategori <span class="req">*</span></label>
             <select id="fKategori" required>
               <option value="">-- Pilih --</option>
-              <option value="__new__">＋ Tambah kategori baru...</option>
             </select>
+            <button type="button" class="btn-add-cat-inline" id="btnTambahKat">＋ Tambah kategori baru</button>
             <div class="new-cat-row hidden" id="newKatRow">
               <input type="text" id="fNewKat" placeholder="Nama kategori baru"/>
               <button type="button" class="btn-add-cat" id="saveNewKat">Tambah</button>
