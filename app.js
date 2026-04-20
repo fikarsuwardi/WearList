@@ -417,11 +417,9 @@ function closeForm() {
 function buildCategoryOptions() {
   const sel = document.getElementById('fKategori');
   const cur = sel.value;
-  while (sel.options.length > 1) sel.remove(1);
-  categories.forEach(cat => {
-    const opt = new Option(cat, cat);
-    sel.insertBefore(opt, sel.lastElementChild);
-  });
+  sel.innerHTML = '<option value="">-- Pilih --</option>';
+  categories.forEach(cat => sel.add(new Option(cat, cat)));
+  sel.add(new Option('＋ Tambah kategori baru...', '__new__'));
   if (categories.includes(cur)) sel.value = cur;
 }
 
