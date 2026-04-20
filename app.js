@@ -78,20 +78,14 @@ function withTimeout(promise) {
 async function loadAllData() {
   showLoading(true);
   try {
-    await withTimeout(Promise.all([
-      loadItems(),
-      loadCategories(),
-      loadArsipCategories(),
-      loadProfile(),
-    ]));
+    await Promise.all([
+      withTimeout(loadItems()).catch(() => {}),
+      withTimeout(loadCategories()).catch(() => {}),
+      withTimeout(loadArsipCategories()).catch(() => {}),
+      withTimeout(loadProfile()).catch(() => {}),
+    ]);
     renderHome();
     loadProfileUI();
-  } catch (err) {
-    if (err.message === 'timeout') {
-      showToast('Koneksi lambat, coba refresh');
-    } else {
-      showToast('Gagal memuat data');
-    }
   } finally {
     showLoading(false);
   }
@@ -174,10 +168,10 @@ function renderHome() {
   }
 
   const usedCats = [...new Set(items.map(i => i.kategori))];
-  const ordered  = [
+  const ordered  = [...new Set([
     ...categories.filter(c => usedCats.includes(c)),
     ...usedCats.filter(c => !categories.includes(c)),
-  ];
+  ])];
   ordered.forEach(cat => {
     const group = items.filter(i => i.kategori === cat);
     if (group.length) scroll.appendChild(makeCatSection(cat, group));
